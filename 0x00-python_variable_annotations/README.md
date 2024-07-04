@@ -492,4 +492,4 @@ bob@dylan:~$ ./102-main.py
 -   File:  `102-type_checking.py`
 
 
-Copyright © 2024 ALX, All rights reserved.
+Copyright © 2024 ALX, All rights reserved
