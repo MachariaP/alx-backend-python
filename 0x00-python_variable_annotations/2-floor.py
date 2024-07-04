@@ -10,6 +10,7 @@ largest integer less than or equal to the number.
 
 import math
 
+
 def floor(n: float) -> int:
     """
     Returns the floor of the float number.
