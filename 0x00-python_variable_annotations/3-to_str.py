@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
-This module provides a utility function to convert a float number to its string representation.
+This module provides a utility function to
+convert a float number to its string representation.
 
-The primary function in this module is `to_str`, which takes a float number as input and returns its string representation.
+The primary function in this module is `to_str`, which takes a
+float number as input and returns its string representation.
 """
+
 
 def to_str(n: float) -> str:
     """
