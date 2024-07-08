@@ -7,9 +7,10 @@ a random amount of time.
 
 import asyncio
 import random
+from typing import Coroutine
 
 
-async def wait_random(max_delay=10):
+async def wait_random(max_delay: int = 10) -> float:
     """
     Asynchronously waits for a random time.
 
