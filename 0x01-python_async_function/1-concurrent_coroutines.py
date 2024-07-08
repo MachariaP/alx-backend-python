@@ -24,5 +24,9 @@ async def wait_n(n: int, max_delay: int) -> List[float]:
         List[float]: A list of wait times for the completed tasks.
     """
     tasks = [wait_random(max_delay) for _ in range(n)]
-    completed_delays = await asyncio.gather(*tasks)
+    try:
+        completed_delays = await asyncio.gather(*tasks)
+    except Exception as e:
+        print(f"An error occured: {e}")
+        return []
     return completed_delays
