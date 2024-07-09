@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Module provides functionality to create asyncio tasks that
+execute with a random delay.
+"""
 
 import asyncio
 from typing import Callable
