@@ -315,6 +315,11 @@ Implement  `test_public_repos_with_license`  to test the  `public_repos`  with t
 -   Directory:  `0x03-Unittests_and_integration_tests`
 -   File:  `test_client.py`
 
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
 
 Copyright © 2024 ALX, All rights reserved.
 

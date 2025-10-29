@@ -150,5 +150,10 @@ bob@dylan:~$ ./2-main.py
 -   Directory:  `0x02-python_async_comprehension`
 -   File:  `2-measure_runtime.py`
 
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
 
 Copyright © 2024 ALX, All rights reserved.

@@ -491,5 +491,10 @@ bob@dylan:~$ ./102-main.py
 -   Directory:  `0x00-python_variable_annotations`
 -   File:  `102-type_checking.py`
 
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
 
 Copyright © 2024 ALX, All rights reserved
