@@ -216,5 +216,10 @@ bob@dylan:~$ ./4-main.py
 -   Directory:  `0x01-python_async_function`
 -   File:  `4-tasks.py`
 
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
 
 Copyright © 2024 ALX, All rights reserved.
