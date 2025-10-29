@@ -1,0 +1,57 @@
+# Python & Development
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+*.pid
+*.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Testing & Main Scripts (Do NOT push)
+0-main.py
+1-main.py
+2-main.py
+3-main.py
+4-main.py
+*-main.py
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS & Misc
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+
+# Database & Sensitive
+*.sqlite3
+*.db
+mysql.cnf
+config.py
+secrets/
+
+# CSV (if not meant to be shared)
+user_data.csv
+
+# Git
+.git
+.gitignore~
