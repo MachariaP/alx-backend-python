@@ -1,5 +1,6 @@
 import sqlite3
 import functools
+from datetime import datetime
 
 #### decorator to lof SQL queries
 
@@ -10,6 +11,9 @@ def log_queries(func):
     """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
+        # Get current time
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         # Extract the query from args or kwargs
         query = None
         if args:
@@ -18,9 +22,9 @@ def log_queries(func):
             query = kwargs['query']
 
         if query:
-            print(f"Executing query: {query}")
+            print(f"[{now}] Executing query: {query}")
         else:
-            print("Warning: No query found in function arguments.")
+            print(f"[{now}] Warning: No query found in function arguments.")
 
         # Execute the original function
         return func(*args, **kwargs)
