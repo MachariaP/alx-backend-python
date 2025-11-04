@@ -270,7 +270,7 @@ This project implements advanced Python patterns for database operations and asy
 
 ## 9. License
 
-This project is licensed under the **MIT License** - see the [LICENSE](../../LICENSE) file for details.
+This project is licensed under the **MIT License** - see the [LICENSE](../LICENSE) file for details.
 
 ```
 MIT License
@@ -327,6 +327,6 @@ This project is part of the **ALX Backend Python** specialization, focusing on a
 
 <sub>⭐ If you find this project helpful, please consider giving it a star!</sub>
 
-<sub>📂 **Parent Repository**: [alx-backend-python](../../README.md) | 📄 **License**: [MIT](../../LICENSE)</sub>
+<sub>📂 **Parent Repository**: [alx-backend-python](../README.md) | 📄 **License**: [MIT](../LICENSE)</sub>
 
 </div>
