@@ -1,0 +1,79 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.mypy_cache/
+.pytest_cache/
+.dmypy.json
+dmypy.json
+
+# === Virtual Environment ===
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# === IDE / Editors ===
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === Database Files (SQLite) ===
+# Keep your DB if you want to share schema, but ignore large/temp ones
+*.db
+*.sqlite
+*.sqlite3
+!users.db          # <-- Keep this one if you want to include sample DB
+# Remove the line above if you don't want to commit the DB
+
+# === Build / Dist ===
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# === Testing ===
+htmlcov/
+.coverage
+.coverage.*
+.tox/
+.nox/
