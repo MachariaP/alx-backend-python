@@ -1004,6 +1004,6 @@ Have questions or want to discuss the project?
 
 ---
 
-<sub>© 2024 Phinehas Macharia. All rights reserved.</sub>
+<sub>© 2025 Phinehas Macharia. All rights reserved.</sub>
 
 </div>
