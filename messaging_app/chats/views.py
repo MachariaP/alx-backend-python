@@ -4,7 +4,7 @@ API Endpoints using DRF ViewSets.
 Real-world: These are the doors to your chat system.
 """
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters  # ← Added 'filters'
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -25,22 +25,21 @@ class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.prefetch_related('participants', 'messages')
     serializer_class = ConversationSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['participants__email', 'participants__first_name']
+
+    def perform_create(self, serializer):
+        """Auto-add current user as participant"""
+        conversation = serializer.save()
+        conversation.participants.add(self.request.user)
 
     @action(detail=True, methods=['post'], url_path='send-message')
     def send_message(self, request, pk=None):
-        """
-        Custom action: Send a message in a conversation.
-        
-        Example:
-        POST /api/conversations/abc123/send-message/
-        { "message_body": "Hey, are you free?" }
-        """
         conversation = self.get_object()
         
-        # Ensure user is in conversation
         if request.user not in conversation.participants.all():
             return Response(
-                {"error": "You are not a participant in this conversation"},
+                {"error": "You are not a participant"},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -52,10 +51,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
 
 class MessageViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    Read-only access to messages.
-    Use ConversationViewSet.send_message to create.
-    """
     queryset = Message.objects.select_related('sender', 'conversation')
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['message_body', 'sender__email']
