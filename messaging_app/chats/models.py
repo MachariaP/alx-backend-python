@@ -51,3 +51,32 @@ class User(AbstractUser):
         verbose_name = "User"
         verbose_name_plural = "Users"
         indexes = [models.Index(fields=['email'])]
+
+class Conversation(models.Model):
+    """
+    Represents a chat between 2+ users.
+
+    Real-world: 
+    - 1:1 chat → DM on Instagram
+    - Group chat → Family group on WhatsApp
+    """
+    conversation_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        db_index=True
+    )
+    participants = models.ManyToManyField(
+        User,
+        related_name='conversations',
+        help_text="Users participating in this conversation"
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        names = ", ".join([user.get_full_name() for user in self.participants.all()[:3]])
+        return f"Chat: {names}" + ("..." if self.participants.count() > 3 else "")
+
+    class Meta:
+        verbose_name_plural = "Conversations"
+        indexes = [models.Index(fields=['created_at'])]
