@@ -3,8 +3,8 @@ App-level URLs.
 Uses DRF DefaultRouter for automatic CRUD.
 
 Note: Equivalent to routers.DefaultRouter() when imported as 'routers'
+For nested routes: NestedDefaultRouter (not used here)
 """
-# ← ADD THIS LINE ABOVE
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
