@@ -1,3 +1,53 @@
-from django.db import models
+"""
+Models for the messaging system.
 
-# Create your models here.
+Real-world analogy:
+- User → WhatsApp contact
+- Conversation → A chat room (1:1 or group)
+- Message → A single text bubble
+"""
+
+import uuid
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
+
+
+class User(AbstractUser):
+    """
+    Extended User model with UUID primary key and role system.
+
+    Why UUID? 
+    - Prevents ID guessing (security)
+    - Works across distributed systems (e.g., microservices)
+    """
+    user_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        db_index=True
+    )
+    first_name = models.CharField(max_length=150, blank=False)
+    last_name = models.CharField(max_length=150, blank=False)
+    email = models.EmailField(unique=True, blank=False)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    
+    ROLE_CHOICES = (
+        ('guest', 'Guest'),
+        ('host', 'Host'),
+        ('admin', 'Admin'),
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='guest')
+    created_at = models.DateTimeField(default=timezone.now)
+
+    # Use email as login
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
+    def __str__(self):
+        return f"{self.get_full_name()} ({self.email})"
+
+    class Meta:
+        verbose_name = "User"
+        verbose_name_plural = "Users"
+        indexes = [models.Index(fields=['email'])]
