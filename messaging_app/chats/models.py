@@ -40,6 +40,8 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='guest')
     created_at = models.DateTimeField(default=timezone.now)
 
+    password = models.CharField(max_length=128, editable=False)
+
     # Use email as login
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
