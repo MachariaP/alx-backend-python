@@ -80,3 +80,40 @@ class Conversation(models.Model):
     class Meta:
         verbose_name_plural = "Conversations"
         indexes = [models.Index(fields=['created_at'])]
+
+class Message(models.Model):
+    """
+    A single message in a conversation.
+
+    Real-world: One chat bubble with timestamp.
+    """
+    message_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        db_index=True
+    )
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='sent_messages',
+        help_text="Who sent the message"
+    )
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        help_text="Which chat this belongs to"
+    )
+    message_body = models.TextField(blank=False)
+    sent_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.sender.email}: {self.message_body[:50]}"
+
+    class Meta:
+        ordering = ['sent_at']
+        indexes = [
+            models.Index(fields=['sent_at']),
+            models.Index(fields=['conversation', 'sent_at']),
+        ]
