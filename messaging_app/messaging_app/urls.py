@@ -17,9 +17,14 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework_simplejwt.views import TokenRefreshView  # Import for refresh
+from .chats.auth import CustomTokenObtainPairView  # Import custom obtain view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('chats.urls')),
     path('api-auth/', include('rest_framework.urls')),  # ← ADD THIS
+    # JWT Authentication URLs
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),  # POST: Get access/refresh tokens
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),      # POST: Refresh access token
 ]
