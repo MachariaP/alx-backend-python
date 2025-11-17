@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404
 
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
+from .permissions import IsOwnerOrReadOnly, IsParticipant
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -56,3 +57,6 @@ class MessageViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['message_body', 'sender__email']
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)  # Auto-set owner
