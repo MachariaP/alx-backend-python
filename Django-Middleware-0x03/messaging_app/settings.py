@@ -61,7 +61,15 @@ MIDDLEWARE = [
     # Custom middleware
     'chats.middleware.RequestLoggingMiddleware',
     'chats.middleware.RestrictAccessByTimeMiddleware',
+    'chats.middleware.OffensiveLanguageMiddleware'
 ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 
 # Add logging configuration
 LOGGING = {

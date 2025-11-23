@@ -1,5 +1,9 @@
 from datetime import datetime
 import logging
+import time
+from django.http import HttpResponseForbidden, JsonResponse
+from django.core.cache import cache
+
 
 # Set up logging configuration
 logger = logging.getLogger('request_logger')
@@ -60,3 +64,62 @@ class RestrictAccessByTimeMiddleware:
         
         response = self.get_response(request)
         return response
+
+class OffensiveLanguageMiddleware:
+    """
+    Middleware to limit chat messages per IP address within a time window.
+    Implements rate limiting of 5 messages per minute per IP.
+    """
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # Rate limiting configuration
+        self.limit = 5  # 5 messages
+        self.window = 60  # 1 minute in seconds
+        
+    def __call__(self, request):
+        # Only apply rate limiting to POST requests (chat messages)
+        if request.method == 'POST':
+            # Get client IP address
+            ip_address = self.get_client_ip(request)
+            
+            if ip_address:
+                # Create a unique key for this IP
+                cache_key = f"chat_rate_limit_{ip_address}"
+                
+                # Get current timestamp
+                current_time = time.time()
+                
+                # Get existing requests from cache or initialize empty list
+                requests = cache.get(cache_key, [])
+                
+                # Remove requests outside the time window
+                requests = [req_time for req_time in requests 
+                           if current_time - req_time < self.window]
+                
+                # Check if limit exceeded
+                if len(requests) >= self.limit:
+                    return JsonResponse({
+                        'error': 'Rate limit exceeded. Please wait before sending more messages.',
+                        'limit': self.limit,
+                        'window_seconds': self.window,
+                        'retry_after': self.window
+                    }, status=429)
+                
+                # Add current request timestamp
+                requests.append(current_time)
+                
+                # Store updated requests in cache (expire after window time)
+                cache.set(cache_key, requests, self.window)
+        
+        response = self.get_response(request)
+        return response
+    
+    def get_client_ip(self, request):
+        """Extract client IP address from request"""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
