@@ -3,6 +3,7 @@ import logging
 import time
 from django.http import HttpResponseForbidden, JsonResponse
 from django.core.cache import cache
+from django.utils.deprecation import MiddlewareMixin
 
 # Set up logging configuration
 logger = logging.getLogger('request_logger')
@@ -20,13 +21,13 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 
-class RequestLoggingMiddleware:
+class RequestLoggingMiddleware(MiddlewareMixin):
     """
     Middleware to log each user's requests to a file.
     Logs timestamp, user, and request path.
     """
     
-    def __init__(self, get_response):
+    def __init__(self, get_response=None):
         self.get_response = get_response
         
     def __call__(self, request):
@@ -40,13 +41,14 @@ class RequestLoggingMiddleware:
         
         return response
 
-class RestrictAccessByTimeMiddleware:
+
+class RestrictAccessByTimeMiddleware(MiddlewareMixin):
     """
     Middleware that restricts access to the messaging app during certain hours.
     Denies access outside 6AM and 9PM (i.e., between 9PM and 6AM).
     """
     
-    def __init__(self, get_response):
+    def __init__(self, get_response=None):
         self.get_response = get_response
         
     def __call__(self, request):
@@ -64,13 +66,14 @@ class RestrictAccessByTimeMiddleware:
         response = self.get_response(request)
         return response
 
-class OffensiveLanguageMiddleware:
+
+class OffensiveLanguageMiddleware(MiddlewareMixin):
     """
     Middleware to limit chat messages per IP address within a time window.
     Implements rate limiting of 5 messages per minute per IP.
     """
     
-    def __init__(self, get_response):
+    def __init__(self, get_response=None):
         self.get_response = get_response
         # Rate limiting configuration
         self.limit = 5  # 5 messages
@@ -123,13 +126,14 @@ class OffensiveLanguageMiddleware:
             ip = request.META.get('REMOTE_ADDR')
         return ip
 
-class RolePermissionMiddleware:
+
+class RolepermissionMiddleware(MiddlewareMixin):  # CHANGED: lowercase 'p'
     """
     Middleware to check user's role before allowing access to specific actions.
     Only allows admin or moderator users for protected actions.
     """
     
-    def __init__(self, get_response):
+    def __init__(self, get_response=None):
         self.get_response = get_response
         # Define protected actions (URL patterns that require admin/moderator)
         self.protected_actions = [
