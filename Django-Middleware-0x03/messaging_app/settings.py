@@ -58,9 +58,30 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    # Custom middleware - ORDER MATTERS!
-    'chats.middleware.RestrictAccessByTimeMiddleware',  # Add this FIRST for access control
-    'chats.middleware.RequestLoggingMiddleware',        # Then logging
+    # Custom middleware
+    'chats.middleware.RequestLoggingMiddleware',  # Add this line
+]
+
+# Add logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'requests.log',
+        },
+    },
+    'loggers': {
+        'request_logger': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
 ]
 
 ROOT_URLCONF = 'messaging_app.urls'
