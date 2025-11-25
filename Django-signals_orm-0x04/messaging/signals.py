@@ -1,6 +1,7 @@
 from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
+from django.utils import timezone
 from .models import Message, Notification, MessageHistory
 
 @receiver(post_save, sender=Message)
@@ -27,9 +28,12 @@ def log_message_edit(sender, instance, **kwargs):
                 # Content changed, create history entry
                 MessageHistory.objects.create(
                     message=instance,
-                    old_content=old_message.content
+                    old_content=old_message.content,
+                    edited_by=instance.sender  # Assuming sender is editing their own message
                 )
                 instance.edited = True
+                instance.edited_at = timezone.now()
+                instance.edited_by = instance.sender
                 print(f"Message edit logged for message {instance.id}")
         except Message.DoesNotExist:
             pass
