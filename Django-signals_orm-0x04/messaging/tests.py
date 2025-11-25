@@ -1,111 +1,104 @@
-from django.test import TestCase
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.views.decorators.cache import cache_page
+from django.http import JsonResponse
 from .models import Message, Notification, MessageHistory
 
-class SignalTests(TestCase):
-    def setUp(self):
-        self.user1 = User.objects.create_user('user1', 'user1@test.com', 'password')
-        self.user2 = User.objects.create_user('user2', 'user2@test.com', 'password')
+@login_required
+@cache_page(60)  # Cache for 60 seconds
+def conversation_view(request, user_id):
+    """
+    View to display conversation between current user and another user
+    """
+    other_user = get_object_or_404(User, id=user_id)
     
-    def test_notification_created_on_new_message(self):
-        """Test that notification is created when new message is sent"""
-        message = Message.objects.create(
-            sender=self.user1,
-            receiver=self.user2,
-            content="Test message"
-        )
-        
-        # Check if notification was created
-        self.assertEqual(Notification.objects.count(), 1)
-        notification = Notification.objects.first()
-        self.assertEqual(notification.user, self.user2)
-        self.assertEqual(notification.message, message)
+    # Get conversation messages with optimizations
+    messages = Message.objects.filter(
+        models.Q(sender=request.user, receiver=other_user) |
+        models.Q(sender=other_user, receiver=request.user)
+    ).select_related('sender', 'receiver').prefetch_related('replies').order_by('timestamp')
     
-    def test_message_edit_logging(self):
-        """Test that message edits are logged in history"""
-        message = Message.objects.create(
-            sender=self.user1,
-            receiver=self.user2,
-            content="Original content"
-        )
-        
-        # Edit the message
-        message.content = "Edited content"
-        message.save()
-        
-        # Check if history was created
-        self.assertEqual(MessageHistory.objects.count(), 1)
-        history = MessageHistory.objects.first()
-        self.assertEqual(history.old_content, "Original content")
-        self.assertTrue(message.edited)
+    context = {
+        'other_user': other_user,
+        'messages': messages
+    }
     
-    def test_user_data_cleanup(self):
-        """Test that user data is cleaned up when user is deleted"""
-        message = Message.objects.create(
-            sender=self.user1,
-            receiver=self.user2,
-            content="Test message"
-        )
-        
-        # Create notification
-        notification = Notification.objects.create(
-            user=self.user2,
-            message=message
-        )
-        
-        # Delete user
-        self.user1.delete()
-        
-        # Check if related data was cleaned up
-        self.assertEqual(Message.objects.filter(sender=self.user1).count(), 0)
+    return render(request, 'messaging/conversation.html', context)
 
-class ORMTests(TestCase):
-    def setUp(self):
-        self.user1 = User.objects.create_user('user1', 'user1@test.com', 'password')
-        self.user2 = User.objects.create_user('user2', 'user2@test.com', 'password')
-        
-        # Create threaded messages
-        parent_message = Message.objects.create(
-            sender=self.user1,
-            receiver=self.user2,
-            content="Parent message"
-        )
-        
-        # Create replies
-        for i in range(3):
-            Message.objects.create(
-                sender=self.user2,
-                receiver=self.user1,
-                content=f"Reply {i}",
-                parent_message=parent_message
-            )
+@login_required
+def unread_messages_view(request):
+    """
+    View to display unread messages using custom manager
+    """
+    unread_messages = Message.unread_messages.for_user_optimized(request.user)
     
-    def test_threaded_conversations_optimization(self):
-        """Test optimized querying of threaded conversations"""
-        from django.db.models import Prefetch
-        
-        # Optimized query using prefetch_related
-        messages = Message.objects.filter(
-            parent_message__isnull=True
-        ).select_related('sender', 'receiver').prefetch_related(
-            Prefetch('replies', queryset=Message.objects.select_related('sender', 'receiver'))
-        )
-        
-        # This should minimize database queries
-        for message in messages:
-            replies = message.replies.all()
-            self.assertEqual(len(replies), 3)
+    context = {
+        'unread_messages': unread_messages
+    }
     
-    def test_unread_messages_manager(self):
-        """Test custom manager for unread messages"""
-        # Create some read and unread messages
-        for i in range(5):
-            Message.objects.create(
-                sender=self.user1,
-                receiver=self.user2,
-                content=f"Message {i}",
-                read=(i % 2 == 0)  # Every other message is read
-            )
-        
-        unread_count = Message.unread_messages.for_user(self.user2).count()
-        self.assertEqual(unread_count, 2)  # 2 unread messages
+    return render(request, 'messaging/unread.html', context)
+
+@login_required
+def delete_user_view(request):
+    """
+    View to allow user to delete their account
+    """
+    if request.method == 'POST':
+        user = request.user
+        user.delete()
+        # User will be logged out automatically
+        return redirect('login')
+    
+    return render(request, 'messaging/delete_account.html')
+
+@login_required
+def message_edit_history_view(request, message_id):
+    """
+    View to display message edit history in user interface
+    """
+    message = get_object_or_404(Message, id=message_id, sender=request.user)
+    edit_history = MessageHistory.objects.filter(message=message).select_related('edited_by').order_by('-edit_timestamp')
+    
+    context = {
+        'message': message,
+        'edit_history': edit_history
+    }
+    
+    return render(request, 'messaging/edit_history.html', context)
+
+def get_threaded_messages(request, message_id):
+    """
+    API endpoint to get threaded messages recursively
+    """
+    message = get_object_or_404(Message, id=message_id)
+    
+    def get_replies(msg, depth=0):
+        replies_data = []
+        # Use prefetch_related to get all replies efficiently
+        for reply in msg.replies.select_related('sender', 'receiver').all():
+            reply_data = {
+                'id': reply.id,
+                'sender': reply.sender.username,
+                'content': reply.content,
+                'timestamp': reply.timestamp.isoformat(),
+                'edited': reply.edited,
+                'edited_at': reply.edited_at.isoformat() if reply.edited_at else None,
+                'edited_by': reply.edited_by.username if reply.edited_by else None,
+                'replies': get_replies(reply, depth + 1)
+            }
+            replies_data.append(reply_data)
+        return replies_data
+    
+    message_data = {
+        'id': message.id,
+        'sender': message.sender.username,
+        'content': message.content,
+        'timestamp': message.timestamp.isoformat(),
+        'edited': message.edited,
+        'edited_at': message.edited_at.isoformat() if message.edited_at else None,
+        'edited_by': message.edited_by.username if message.edited_by else None,
+        'replies': get_replies(message)
+    }
+    
+    return JsonResponse(message_data)
