@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from .managers import UnreadMessagesManager
 
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
@@ -15,7 +16,7 @@ class Message(models.Model):
     
     # Custom manager for unread messages
     objects = models.Manager()  # Default manager
-    unread_messages = models.Manager()  # Will be overridden by custom manager
+    unread = UnreadMessagesManager()  # Custom manager named 'unread'
     
     class Meta:
         ordering = ['-timestamp']
@@ -46,11 +47,3 @@ class MessageHistory(models.Model):
     
     def __str__(self):
         return f"History for message {self.message.id}"
-
-# Custom manager for unread messages
-class UnreadMessagesManager(models.Manager):
-    def for_user(self, user):
-        return self.filter(receiver=user, read=False)
-    
-    def for_user_optimized(self, user):
-        return self.for_user(user).only('id', 'sender__username', 'content', 'timestamp')
