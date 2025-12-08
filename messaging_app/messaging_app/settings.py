@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from datetime import timedelta
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -82,13 +83,17 @@ WSGI_APPLICATION = 'messaging_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Database configuration using MYSQL_DB (not MYSQL_DATABASE)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': config('MYSQL_DB', default='messaging_db'),  # Changed from MYSQL_DATABASE
+        'USER': config('MYSQL_USER', default='app_user'),
+        'PASSWORD': config('MYSQL_PASSWORD', default=''),
+        'HOST': config('MYSQL_HOST', default='localhost'),
+        'PORT': config('MYSQL_PORT', default=3306),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

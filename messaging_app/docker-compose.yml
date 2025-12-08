@@ -1,3 +1,4 @@
+# messaging_app/docker-compose.yml
 version: '3.8'
 
 services:
@@ -6,10 +7,11 @@ services:
     container_name: messaging_db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DB: ${MYSQL_DATABASE:-messaging_db}  # Changed from MYSQL_DATABASE to MYSQL_DB
+      MYSQL_USER: ${MYSQL_USER:-app_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-secure_password_123}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password_456}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-messaging_db}  # Keep for MySQL compatibility
     ports:
       - "3307:3306"
     volumes:
@@ -24,14 +26,15 @@ services:
     ports:
       - "8000:8000"
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DB: ${MYSQL_DATABASE:-messaging_db}  # Added MYSQL_DB for Django
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-messaging_db}  # Keep for backward compatibility
+      MYSQL_USER: ${MYSQL_USER:-app_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-secure_password_123}
       MYSQL_HOST: db
       MYSQL_PORT: 3306
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
-      DJANGO_DEBUG: ${DJANGO_DEBUG}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-django-insecure-fallback-key}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
     depends_on:
       - db
     volumes:
@@ -39,8 +42,8 @@ services:
     networks:
       - messaging_network
     command: >
-      sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+      sh -c "python3 manage.py migrate &&
+             python3 manage.py runserver 0.0.0.0:8000"  # Changed python to python3
 
 volumes:
   mysql_data:
