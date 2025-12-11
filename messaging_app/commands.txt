@@ -1,0 +1,17 @@
+# Commands to apply Ingress configuration
+
+# 1. Enable ingress addon in minikube
+minikube addons enable ingress
+
+# 2. Apply the ingress configuration
+kubectl apply -f ingress.yaml
+
+# 3. Get ingress IP address
+kubectl get ingress django-ingress
+
+# 4. Add host entry (for local testing)
+# Add this to /etc/hosts or equivalent:
+# $(minikube ip) django-app.local
+
+# 5. Test the ingress
+curl http://django-app.local/
