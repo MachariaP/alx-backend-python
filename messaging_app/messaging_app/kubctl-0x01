@@ -1,0 +1,59 @@
+#!/bin/bash
+# kubctl-0x01 - Scaling Script
+
+set -e
+
+echo "Starting scaling operation..."
+
+# Scale the deployment to 3 replicas
+echo "Scaling deployment to 3 replicas..."
+kubectl scale deployment django-messaging-app --replicas=3
+
+# Wait for pods to be ready
+echo "Waiting for pods to be ready..."
+sleep 10
+
+# Verify multiple pods are running
+echo "Current pods status:"
+kubectl get pods -l app=django-messaging-app
+
+# Count running pods
+RUNNING_PODS=$(kubectl get pods -l app=django-messaging-app --field-selector=status.phase=Running | grep -c "Running" || true)
+
+if [ "$RUNNING_PODS" -lt 3 ]; then
+    echo "Warning: Expected 3 running pods but found $RUNNING_PODS"
+fi
+
+# Set up port forwarding for load testing
+echo "Setting up port forwarding..."
+kubectl port-forward service/django-service 8000:8000 &
+PORT_FORWARD_PID=$!
+
+# Wait for port forwarding to be ready
+sleep 5
+
+# Perform load testing with wrk if available
+if command -v wrk &> /dev/null; then
+    echo "Starting load testing..."
+    echo "Running wrk for 30 seconds with 4 threads and 10 connections..."
+    wrk -t4 -c10 -d30s http://localhost:8000/ || echo "Load test completed (errors might indicate app is not ready)"
+else
+    echo "wrk not found. Using curl for basic testing..."
+    for i in {1..10}; do
+        curl -s -o /dev/null -w "Request $i: HTTP %{http_code}\n" http://localhost:8000/health/ || true
+        sleep 1
+    done
+fi
+
+# Monitor resource usage
+echo "Monitoring resource usage..."
+echo "Pod resource usage:"
+kubectl top pods -l app=django-messaging-app || echo "Metrics server not available"
+
+echo "Node resource usage:"
+kubectl top nodes || echo "Node metrics not available"
+
+# Clean up port forwarding
+kill $PORT_FORWARD_PID 2>/dev/null || true
+
+echo "Scaling operation completed!"
