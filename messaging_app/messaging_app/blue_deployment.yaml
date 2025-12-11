@@ -1,0 +1,44 @@
+# blue_deployment.yaml - Updated with version 2.0
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app-blue
+  labels:
+    app: django-app
+    version: blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: django-app
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: django-app
+        version: blue
+    spec:
+      containers:
+      - name: django-app
+        image: django-messaging-app:2.0  # Updated to version 2.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: VERSION
+          value: "blue-v2.0"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
