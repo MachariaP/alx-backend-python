@@ -1,0 +1,80 @@
+#!/bin/bash
+# kubctl-0x02 - Blue-Green Deployment Script
+
+set -e
+
+echo "Starting Blue-Green deployment process..."
+
+# Deploy blue version
+echo "Deploying blue version..."
+kubectl apply -f blue_deployment.yaml
+
+# Deploy green version
+echo "Deploying green version..."
+kubectl apply -f green_deployment.yaml
+
+# Apply the service (initially pointing to blue)
+echo "Applying service configuration..."
+kubectl apply -f kubeservice.yaml
+
+# Wait for deployments to be ready
+echo "Waiting for deployments to be ready..."
+sleep 15
+
+# Check deployment status
+echo "Checking deployment status..."
+kubectl get deployments -l app=django-app
+
+# Check pod status
+echo "Checking pod status..."
+kubectl get pods -l app=django-app
+
+# Check logs for errors in green deployment
+echo "Checking logs for green deployment..."
+GREEN_PODS=$(kubectl get pods -l version=green -o name | head -1)
+if [ -n "$GREEN_PODS" ]; then
+    echo "Logs from green deployment:"
+    kubectl logs $GREEN_PODS --tail=20
+else
+    echo "No green pods found yet"
+fi
+
+# Check logs for errors in blue deployment
+echo "Checking logs for blue deployment..."
+BLUE_PODS=$(kubectl get pods -l version=blue -o name | head -1)
+if [ -n "$BLUE_PODS" ]; then
+    echo "Logs from blue deployment:"
+    kubectl logs $BLUE_PODS --tail=20
+else
+    echo "No blue pods found"
+fi
+
+# Switch traffic to green (blue-green switch)
+echo "Switching traffic from blue to green..."
+kubectl patch service django-app-service -p '{"spec":{"selector":{"version":"green"}}}'
+
+echo "Traffic switched to green deployment"
+
+# Verify service is pointing to green
+echo "Verifying service selector..."
+kubectl describe service django-app-service | grep -A2 Selector
+
+# Test the service
+echo "Testing the service..."
+SERVICE_IP=$(kubectl get service django-app-service -o jsonpath='{.spec.clusterIP}')
+echo "Service IP: $SERVICE_IP"
+
+# Set up port forwarding for testing
+echo "Setting up port forwarding..."
+kubectl port-forward service/django-app-service 8001:8000 &
+PORT_FORWARD_PID=$!
+sleep 3
+
+# Test with curl
+echo "Testing endpoint..."
+curl -s http://localhost:8001/health/ || echo "Service might not be ready yet"
+
+# Clean up
+kill $PORT_FORWARD_PID 2>/dev/null || true
+
+echo "Blue-Green deployment process completed!"
