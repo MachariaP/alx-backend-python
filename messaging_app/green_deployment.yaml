@@ -1,0 +1,39 @@
+# green_deployment.yaml - Green Deployment (New Version)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app-green
+  labels:
+    app: django-app
+    version: green
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: django-app
+      version: green
+  template:
+    metadata:
+      labels:
+        app: django-app
+        version: green
+    spec:
+      containers:
+      - name: django-app
+        image: django-messaging-app:v1.1  # Green version
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: VERSION
+          value: "green-v1.1"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
