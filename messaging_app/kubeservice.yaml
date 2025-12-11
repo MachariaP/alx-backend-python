@@ -1,0 +1,15 @@
+# kubeservice.yaml - Service for Blue-Green Deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-app-service
+spec:
+  selector:
+    app: django-app
+    version: blue  # Initially pointing to blue
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP
