@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView  # Import for refresh
-from .chats.auth import CustomTokenObtainPairView  # Import custom obtain view
+from chats.auth import CustomTokenObtainPairView  # Import custom obtain view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
