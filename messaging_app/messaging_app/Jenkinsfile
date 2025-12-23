@@ -1,0 +1,105 @@
+pipeline {
+    agent any
+    
+    environment {
+        PYTHON_VERSION = '3.9'
+        PROJECT_DIR = 'messaging_app'
+        DOCKER_IMAGE = 'yourusername/messaging-app'
+        DOCKER_TAG = "build-${BUILD_NUMBER}"
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Set up Python') {
+            steps {
+                script {
+                    sh """
+                    python${PYTHON_VERSION} --version
+                    pip${PYTHON_VERSION} --version
+                    """
+                }
+            }
+        }
+        
+        stage('Install dependencies') {
+            steps {
+                dir(PROJECT_DIR) {
+                    sh """
+                    pip${PYTHON_VERSION} install -r requirements.txt
+                    """
+                }
+            }
+        }
+        
+        stage('Run tests') {
+            steps {
+                dir(PROJECT_DIR) {
+                    sh """
+                    python${PYTHON_VERSION} -m pytest \
+                        --junitxml=test-results.xml \
+                        --cov=. \
+                        --cov-report=xml:coverage.xml \
+                        --cov-report=html:coverage_html
+                    """
+                }
+            }
+            post {
+                always {
+                    junit "${PROJECT_DIR}/test-results.xml"
+                    publishHTML(target: [
+                        reportName: 'Coverage Report',
+                        reportDir: "${PROJECT_DIR}/coverage_html",
+                        reportFiles: 'index.html',
+                        keepAll: true
+                    ])
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                dir(PROJECT_DIR) {
+                    sh """
+                    docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+                    """
+                }
+            }
+        }
+        
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'docker-hub-creds',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )]) {
+                        sh """
+                        echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
+                        docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+                        docker push ${DOCKER_IMAGE}:latest
+                        """
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+        always {
+            cleanWs()
+        }
+    }
+}
