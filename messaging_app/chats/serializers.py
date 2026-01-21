@@ -36,14 +36,18 @@ class ConversationSerializer(serializers.ModelSerializer):
     Real-world: Opening a chat → see all messages + who’s in it.
     """
     participants = UserSerializer(many=True, read_only=True)
-    messages = MessageSerializer(many=True, read_only=True, source='messages')
+    messages = MessageSerializer(many=True, read_only=True)  # Fixed: removed redundant source='messages'
 
     # Add SerializerMethodField to satisfy checker
     latest_message = serializers.SerializerMethodField()
 
     def get_latest_message(self, obj):
         latest = obj.messages.order_by('-sent_at').first()
-        return latest.message_body[:50] + "..." if latest and len(latest.message_body) > 50 else (latest.message_body if latest else "")
+        return (
+            latest.message_body[:50] + "..." 
+            if latest and len(latest.message_body) > 50 
+            else (latest.message_body if latest else "")
+        )
 
     class Meta:
         model = Conversation
