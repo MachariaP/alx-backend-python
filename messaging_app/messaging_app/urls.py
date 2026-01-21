@@ -27,4 +27,10 @@ urlpatterns = [
     # JWT Authentication URLs
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),  # POST: Get access/refresh tokens
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),      # POST: Refresh access token
+    # OpenAPI schema (raw JSON/YAML)
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+
+    # Beautiful interactive UI
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]

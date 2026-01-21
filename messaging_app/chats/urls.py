@@ -13,7 +13,7 @@ from . import views
 # Create router and register viewsets
 router = DefaultRouter()
 router.register(r'conversations', views.ConversationViewSet)
-router.register(r'messages', views.MessageViewSet)
+router.register(r'messages', views.MessageViewSet, basename='message')  # Add basename here
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',
+    'drf_spectacular',
 
     # Local apps
     'chats',
@@ -136,9 +137,21 @@ REST_FRAMEWORK = {
             'rest_framework.permissions.IsAuthenticated',
             ],
         'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+        'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
         'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
         'PAGE_SIZE':20
         }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ALX Messaging App API',
+    'DESCRIPTION': 'Backend API for real-time messaging application',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': True.
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,  # Keeps token after refresh
+    }
+    'COMPONENT_NO_READ_ONLY_REQUIRED': True,
+}
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Short-lived access token
