@@ -146,11 +146,20 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'ALX Messaging App API',
     'DESCRIPTION': 'Backend API for real-time messaging application',
     'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': True,           # fixed
+    'SERVE_INCLUDE_SCHEMA': True,
     'SWAGGER_UI_SETTINGS': {
-        'persistAuthorization': True,       # Keeps token after refresh
+        'persistAuthorization': True,
     },
     'COMPONENT_NO_READ_ONLY_REQUIRED': True,
+    # Optional: Add these to suppress warnings
+    'COMPONENT_SPLIT_REQUEST': True,
+    'ENUM_NAME_OVERRIDES': {
+        'OrderingEnum': 'drf_spectacular.utils.Ordering',
+    },
+    # Optional: Ignore specific warnings
+    'IGNORE_WARNINGS': [
+        'could not derive type of path parameter',
+    ]
 }
 
 SIMPLE_JWT = {

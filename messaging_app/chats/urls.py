@@ -20,8 +20,21 @@ from . import views
 # Create router and register viewsets
 router = DefaultRouter()
 router.register(r'conversations', views.ConversationViewSet, basename='conversation')
-router.register(r'messages',      views.MessageViewSet,      basename='message')
+router.register(r'messages', views.MessageViewSet, basename='message')
 
+# Alternative: Explicit path patterns with type annotations
 urlpatterns = [
-    path('', include(router.urls)),
+    # Conversation endpoints
+    path('conversations/', views.ConversationViewSet.as_view({'get': 'list', 'post': 'create'}), name='conversation-list'),
+    path('conversations/<int:pk>/', views.ConversationViewSet.as_view({
+        'get': 'retrieve',
+        'put': 'update',
+        'patch': 'partial_update',
+        'delete': 'destroy'
+    }), name='conversation-detail'),
+    path('conversations/<int:pk>/send-message/', views.ConversationViewSet.as_view({'post': 'send_message'}), name='conversation-send-message'),
+    
+    # Message endpoints with explicit type annotation for 'pk'
+    path('messages/', views.MessageViewSet.as_view({'get': 'list'}), name='message-list'),
+    path('messages/<int:pk>/', views.MessageViewSet.as_view({'get': 'retrieve'}), name='message-detail'),
 ]

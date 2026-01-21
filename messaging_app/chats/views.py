@@ -8,6 +8,7 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
@@ -33,6 +34,10 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation = serializer.save()
         conversation.participants.add(self.request.user)
 
+    @extend_schema(
+        request=MessageSerializer,
+        responses={201: MessageSerializer}
+    )
     @action(detail=True, methods=['post'], url_path='send-message')
     def send_message(self, request, pk=None):
         """
@@ -61,6 +66,8 @@ class MessageViewSet(viewsets.ReadOnlyModelViewSet):
     Users can only see messages from conversations they participate in.
     Supports filtering by conversation_id.
     """
+    # Add queryset attribute to help drf-spectacular infer the model type
+    queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
     filter_backends = [filters.SearchFilter]
