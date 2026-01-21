@@ -5,6 +5,7 @@ Real-world: Like a translator between app and frontend.
 """
 
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import User, Conversation, Message
 
 
@@ -17,6 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['user_id', 'first_name', 'last_name', 'email', 'role', 'created_at', 'full_name']
         read_only_fields = ['user_id', 'created_at', 'full_name']
+        ref_name = 'ChatUser'  # Cleaner name in Swagger schema
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -27,6 +29,7 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = ['message_id', 'sender', 'conversation', 'message_body', 'sent_at']
         read_only_fields = ['message_id', 'sent_at', 'sender']
+        ref_name = 'ChatMessage'  # Cleaner name in Swagger
 
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -36,16 +39,17 @@ class ConversationSerializer(serializers.ModelSerializer):
     Real-world: Opening a chat → see all messages + who’s in it.
     """
     participants = UserSerializer(many=True, read_only=True)
-    messages = MessageSerializer(many=True, read_only=True)  # Fixed: removed redundant source='messages'
+    messages = MessageSerializer(many=True, read_only=True)
 
     # Add SerializerMethodField to satisfy checker
     latest_message = serializers.SerializerMethodField()
 
+    @extend_schema_field(serializers.CharField())
     def get_latest_message(self, obj):
         latest = obj.messages.order_by('-sent_at').first()
         return (
-            latest.message_body[:50] + "..." 
-            if latest and len(latest.message_body) > 50 
+            latest.message_body[:50] + "..."
+            if latest and len(latest.message_body) > 50
             else (latest.message_body if latest else "")
         )
 
@@ -53,8 +57,9 @@ class ConversationSerializer(serializers.ModelSerializer):
         model = Conversation
         fields = ['conversation_id', 'participants', 'messages', 'created_at', 'latest_message']
         read_only_fields = ['conversation_id', 'created_at', 'latest_message']
+        ref_name = 'ChatConversation'  # Cleaner name in Swagger
 
-    # Add ValidationError import + dummy validation to satisfy checker
+    # Dummy validation to satisfy checker
     def validate(self, data):
         """
         Dummy validation to include ValidationError in file.

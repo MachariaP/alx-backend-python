@@ -1,9 +1,16 @@
 """
 App-level URLs.
-Uses DRF DefaultRouter for automatic CRUD.
+Uses DRF DefaultRouter for automatic CRUD generation.
 
-Note: Equivalent to routers.DefaultRouter() when imported as 'routers'
-For nested routes: NestedDefaultRouter (not used here)
+Note: DefaultRouter automatically creates:
+- List:    GET    /conversations/     → list
+- Create:  POST   /conversations/     → create
+- Detail:  GET    /conversations/<pk>/ → retrieve
+           PUT    /conversations/<pk>/ → update
+           PATCH  /conversations/<pk>/ → partial_update
+           DELETE /conversations/<pk>/ → destroy
+
+Same for messages (with basename='message' to avoid queryset lookup issues).
 """
 
 from django.urls import path, include
@@ -12,8 +19,8 @@ from . import views
 
 # Create router and register viewsets
 router = DefaultRouter()
-router.register(r'conversations', views.ConversationViewSet)
-router.register(r'messages', views.MessageViewSet, basename='message')  # Add basename here
+router.register(r'conversations', views.ConversationViewSet, basename='conversation')
+router.register(r'messages',      views.MessageViewSet,      basename='message')
 
 urlpatterns = [
     path('', include(router.urls)),
