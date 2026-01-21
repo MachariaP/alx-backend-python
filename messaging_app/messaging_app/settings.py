@@ -146,10 +146,10 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'ALX Messaging App API',
     'DESCRIPTION': 'Backend API for real-time messaging application',
     'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': True,
+    'SERVE_INCLUDE_SCHEMA': True,           # fixed
     'SWAGGER_UI_SETTINGS': {
-        'persistAuthorization': True,  # Keeps token after refresh
-    }
+        'persistAuthorization': True,       # Keeps token after refresh
+    },
     'COMPONENT_NO_READ_ONLY_REQUIRED': True,
 }
 
