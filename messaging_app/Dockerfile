@@ -1,10 +1,13 @@
 FROM python:3.12-slim
 
-# Install system dependencies (PostgreSQL client libraries)
-RUN apt-get update && apt-get install -y \
+# Install system dependencies:
+# - gcc & build-essential tools (for compiling mysqlclient)
+# - pkg-config (mysqlclient setup.py needs it to find libs)
+# - default-libmysqlclient-dev (MySQL/MariaDB client dev headers + libs)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     pkg-config \
-    libpq-dev \
+    default-libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables
