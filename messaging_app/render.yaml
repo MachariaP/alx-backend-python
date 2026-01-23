@@ -6,7 +6,7 @@ services:
     dockerContext: .
     envVars:
       - key: DATABASE_URL
-        value: postgresql://messaging_db_wdtp_user:CrVGoDBg9vsd8DNQRflsISfmRuoXo5C8@dpg-d5pivf8gjchc73dvgtb0-a/messaging_db_wdtp
+        value: postgresql://messaging_db_wdtp_user:CrVGoDBg9vsd8DNQRflsISfmRuoXo5C8@dpg-d5pivf8gjchc73dvgtb0-a.oregon-postgres.render.com/messaging_db_wdtp
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
